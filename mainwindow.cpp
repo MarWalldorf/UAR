@@ -93,7 +93,7 @@ void MainWindow::konfigurujGUI() {
     connect(edycjaTd, &QLineEdit::editingFinished, this, &MainWindow::aktualizujPID);
 
     comboMetodaCalk = new QComboBox();
-    comboMetodaCalk->addItem("Stała w sumie", 0);
+    comboMetodaCalk->addItem("Stała pod sumą", 0);
     comboMetodaCalk->addItem("Stała przed sumą", 1);
     connect(comboMetodaCalk, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &MainWindow::aktualizujPID);
 
