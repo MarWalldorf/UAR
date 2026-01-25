@@ -2,9 +2,8 @@
 #define KONFIGURACJAARX_H
 
 #include <QDialog>
-#include <QLineEdit>
-#include <QSpinBox>
 #include <QDoubleSpinBox>
+#include <QSpinBox>
 #include <vector>
 #include "ModelARX.h"
 
@@ -18,14 +17,22 @@ protected:
 
 private:
     ModelARX* modelArx;
-    QLineEdit* edycjaA;
-    QLineEdit* edycjaB;
+
+    // Pola dla współczynników A
+    QDoubleSpinBox* spinA1;
+    QDoubleSpinBox* spinA2;
+    QDoubleSpinBox* spinA3;
+
+    // Pola dla współczynników B
+    QDoubleSpinBox* spinB1;
+    QDoubleSpinBox* spinB2;
+    QDoubleSpinBox* spinB3;
+
     QSpinBox* spinOpoznienie;
     QDoubleSpinBox* spinSzum;
 
     void zapiszZmiany();
-    std::vector<double> parsujWektor(const QString& tekst);
-    QString wektorNaTekst(const std::vector<double>& wektor);
+
 };
 
 #endif

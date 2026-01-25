@@ -13,7 +13,7 @@ public:
 
     explicit RegulatorPID(double k, double ti = 0.0, double td = 0.0);
 
-    // Główna funkcja symulacji (oryginalna)
+    // Główna funkcja symulacji
     double symuluj(double e, double dt);
 
     void setMetodaCalkowania(MetodaCalkowania metoda);

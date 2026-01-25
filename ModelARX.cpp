@@ -60,7 +60,7 @@ std::vector<double> ModelARX::getB() const { return wspolczynniki_B; }
 int ModelARX::getOpoznienie() const { return opoznienie; }
 
 double ModelARX::symuluj(double u) {
-    // 1. Opóźnienie
+    // Opóźnienie
     bufor_opoznienia.push_back(u);
     double u_delayed = 0.0;
 
@@ -76,7 +76,7 @@ double ModelARX::symuluj(double u) {
         }
     }
 
-    // 2. Równanie ARX
+    // Równanie ARX
     double y = 0.0;
     for (size_t i = 0; i < wspolczynniki_A.size(); ++i) {
         y -= wspolczynniki_A[i] * historia_Y[i];
@@ -94,12 +94,12 @@ double ModelARX::symuluj(double u) {
         y += wspolczynniki_B[i] * historia_U[i];
     }
 
-    // 3. Szum
+    // Szum
     if (stddev_szumu > 0.0001) {
         y += dist(gen) * stddev_szumu;
     }
 
-    // 4. Aktualizacja historii Y
+    // Aktualizacja historii Y
     if (!historia_Y.empty()) {
         for (size_t i = historia_Y.size() - 1; i > 0; --i) {
             historia_Y[i] = historia_Y[i - 1];

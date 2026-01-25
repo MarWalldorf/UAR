@@ -72,8 +72,6 @@ double RegulatorPID::getTi() const { return Ti; }
 void RegulatorPID::setTd(double td) { Td = td; }
 double RegulatorPID::getTd() const { return Td; }
 
-// --- IMPLEMENTACJA ADAPTERA ---
-
 void RegulatorPID::setLiczCalk(LiczCalk m) {
     if (m == LiczCalk::Wew) {
         setMetodaCalkowania(MetodaCalkowania::STALA_W_SUMIE);

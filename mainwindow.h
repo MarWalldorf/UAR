@@ -9,6 +9,8 @@
 #include <QSpinBox>
 #include <QPushButton>
 #include <QDoubleSpinBox>
+#include <QElapsedTimer>
+
 #include "ModelARX.h"
 #include "RegulatorPID.h"
 #include "Generator.h"
@@ -28,9 +30,11 @@ private slots:
 
     void aktualizujPID();
     void aktualizujGenerator();
-    void aktualizujInterwal();
-    void zresetujCalkePID();
 
+    void aktualizujInterwal();
+    void aktualizujOknoCzasowe();
+
+    void zresetujCalkePID();
     void zapiszKonfiguracje();
     void wczytajKonfiguracje();
 
@@ -41,9 +45,16 @@ private:
     Petla_Sprzezenia petla;
 
     QTimer* timerSymulacji;
+
+
+    QElapsedTimer licznikCzasuRzeczywistego;
+    double czasBazy;
     double aktualnyCzas;
+
+
     bool czyDziala;
     int interwalMs;
+    double oknoCzasowe;
 
     // GUI - Kontrolki
     QLineEdit *edycjaKp, *edycjaTi, *edycjaTd;
@@ -55,6 +66,8 @@ private:
     QDoubleSpinBox *spinGenCzasAkt;
 
     QSpinBox *spinInterwal;
+    QDoubleSpinBox *spinOknoCzasowe;
+
     QPushButton *btnStartStop;
 
     // Wykresy i serie danych

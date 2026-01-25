@@ -6,7 +6,7 @@
 #include "RegulatorPID.h"
 #include "ProstyUAR.h"
 
-// --- MECHANIZM ZLICZANIA TESTÓW ---
+// MECHANIZM ZLICZANIA TESTÓW
 namespace StatystykiTestow {
 static int liczba_sukcesow = 0;
 static int liczba_wszystkich = 0;
@@ -25,7 +25,7 @@ void raportKoncowy() {
 }
 }
 
-//Funkcje pomocnicze dla testów:
+// Funkcje pomocnicze dla testów:
 
 void raportBleduSekwencji(std::vector<double>& spodz, std::vector<double>& fakt)
 {
@@ -75,8 +75,6 @@ void myAssert(double spodz, double fakt) {
         std::cerr << "FAIL! Spodz: " << spodz << " Fakt: " << fakt << "\n";
     }
 }
-
-// --- ORYGINALNE TESTY (Zostawiamy bez zmian logicznych, jedynie namespace) ---
 
 namespace TESTY_ModelARX
 {
@@ -245,7 +243,7 @@ void TESTY_RegulatorPID::test_PID_skokJednostkowy() {
 }
 
 void TESTY_RegulatorPID::test_PI_skokJednostkowy_3() {
-    // Wersja skrócona dla przejrzystości, zachowuje logikę oryginału
+
     std::cerr << "RegPI (zmiana parametrow) -> test skoku jednostkowego nr 3: ";
     try {
         RegulatorPID it(0.5, 10.0);
@@ -312,9 +310,7 @@ void TESTY_ProstyUAR::test_UAR_3_skokJednostkowyPID() {
     myAssert(spodz, fakt);
 }
 
-// -------------------------------------------------------------------------
-// --- NOWE TESTY --- 10 DODATKOWYCH SCENARIUSZY
-// -------------------------------------------------------------------------
+// NOWE TESTY - 10 DODATKOWYCH SCENARIUSZY
 
 namespace TESTY_Dodatkowe {
 void wykonaj_testy();

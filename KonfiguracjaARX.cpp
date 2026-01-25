@@ -1,41 +1,113 @@
 #include "KonfiguracjaARX.h"
 #include <QVBoxLayout>
+#include <QHBoxLayout>
 #include <QLabel>
 #include <QPushButton>
-#include <QMessageBox>
+#include <QGroupBox>
 
 KonfiguracjaARX::KonfiguracjaARX(ModelARX* model, QWidget* parent)
     : QDialog(parent), modelArx(model) {
     setWindowTitle("Konfiguracja Modelu ARX");
     setModal(false);
-    resize(300, 250);
+    resize(350, 450);
 
-    QVBoxLayout* layout = new QVBoxLayout(this);
+    QVBoxLayout* mainLayout = new QVBoxLayout(this);
 
-    layout->addWidget(new QLabel("Współczynniki A (po przecinku):"));
-    edycjaA = new QLineEdit(wektorNaTekst(modelArx->getA()));
-    layout->addWidget(edycjaA);
 
-    layout->addWidget(new QLabel("Współczynniki B (po przecinku):"));
-    edycjaB = new QLineEdit(wektorNaTekst(modelArx->getB()));
-    layout->addWidget(edycjaB);
+    std::vector<double> wekA = modelArx->getA();
+    std::vector<double> wekB = modelArx->getB();
+    if (wekA.size() < 3) wekA.resize(3, 0.0);
+    if (wekB.size() < 3) wekB.resize(3, 0.0);
 
-    layout->addWidget(new QLabel("Opóźnienie transportowe (k):"));
+
+    QGroupBox* groupA = new QGroupBox("Współczynniki A");
+    QVBoxLayout* layoutA = new QVBoxLayout(groupA);
+
+
+    layoutA->addWidget(new QLabel("a1 (zakres: -0.45 do 0):"));
+    spinA1 = new QDoubleSpinBox();
+    spinA1->setRange(-0.45, 0.0);
+    spinA1->setSingleStep(0.01);
+    spinA1->setDecimals(2);
+    spinA1->setValue(wekA[0]);
+    layoutA->addWidget(spinA1);
+
+
+    layoutA->addWidget(new QLabel("a2 (zakres: -0.40 do 0):"));
+    spinA2 = new QDoubleSpinBox();
+    spinA2->setRange(-0.40, 0.0);
+    spinA2->setSingleStep(0.01);
+    spinA2->setDecimals(2);
+    spinA2->setValue(wekA[1]);
+    layoutA->addWidget(spinA2);
+
+
+    layoutA->addWidget(new QLabel("a3 (zakres: -0.35 do 0):"));
+    spinA3 = new QDoubleSpinBox();
+    spinA3->setRange(-0.35, 0.0);
+    spinA3->setSingleStep(0.01);
+    spinA3->setDecimals(2);
+    spinA3->setValue(wekA[2]);
+    layoutA->addWidget(spinA3);
+
+    mainLayout->addWidget(groupA);
+
+
+    QGroupBox* groupB = new QGroupBox("Współczynniki B");
+    QVBoxLayout* layoutB = new QVBoxLayout(groupB);
+
+
+    layoutB->addWidget(new QLabel("b1 (zakres: 0 do 2.50):"));
+    spinB1 = new QDoubleSpinBox();
+    spinB1->setRange(0.0, 2.50);
+    spinB1->setSingleStep(0.01);
+    spinB1->setDecimals(2);
+    spinB1->setValue(wekB[0]);
+    layoutB->addWidget(spinB1);
+
+
+    layoutB->addWidget(new QLabel("b2 (zakres: 0 do 0.80):"));
+    spinB2 = new QDoubleSpinBox();
+    spinB2->setRange(0.0, 0.80);
+    spinB2->setSingleStep(0.01);
+    spinB2->setDecimals(2);
+    spinB2->setValue(wekB[1]);
+    layoutB->addWidget(spinB2);
+
+
+    layoutB->addWidget(new QLabel("b3 (zakres: 0 do 0.50):"));
+    spinB3 = new QDoubleSpinBox();
+    spinB3->setRange(0.0, 0.50);
+    spinB3->setSingleStep(0.01);
+    spinB3->setDecimals(2);
+    spinB3->setValue(wekB[2]);
+    layoutB->addWidget(spinB3);
+
+    mainLayout->addWidget(groupB);
+
+
+    QGroupBox* groupOther = new QGroupBox("Pozostałe parametry");
+    QVBoxLayout* layoutOther = new QVBoxLayout(groupOther);
+
+    layoutOther->addWidget(new QLabel("Opóźnienie transportowe (k):"));
     spinOpoznienie = new QSpinBox();
     spinOpoznienie->setRange(1, 1000);
     spinOpoznienie->setValue(modelArx->getOpoznienie());
-    layout->addWidget(spinOpoznienie);
+    layoutOther->addWidget(spinOpoznienie);
 
-    layout->addWidget(new QLabel("Odchylenie std. szumu:"));
+    layoutOther->addWidget(new QLabel("Odchylenie std. szumu:"));
     spinSzum = new QDoubleSpinBox();
     spinSzum->setRange(0.0, 100.0);
     spinSzum->setSingleStep(0.01);
+
     spinSzum->setValue(modelArx->getSzum());
-    layout->addWidget(spinSzum);
+    layoutOther->addWidget(spinSzum);
+
+    mainLayout->addWidget(groupOther);
 
     QPushButton* btnZamknij = new QPushButton("Zastosuj i Zamknij");
     connect(btnZamknij, &QPushButton::clicked, this, &KonfiguracjaARX::close);
-    layout->addWidget(btnZamknij);
+    mainLayout->addWidget(btnZamknij);
 }
 
 void KonfiguracjaARX::closeEvent(QCloseEvent* event) {
@@ -44,35 +116,21 @@ void KonfiguracjaARX::closeEvent(QCloseEvent* event) {
 }
 
 void KonfiguracjaARX::zapiszZmiany() {
-    std::vector<double> noweA = parsujWektor(edycjaA->text());
-    std::vector<double> noweB = parsujWektor(edycjaB->text());
 
-    if (noweA.size() < 3 || noweB.size() < 3) {
-        QMessageBox::warning(this, "Błąd", "Wektory A i B muszą mieć minimum 3 współczynniki!");
-        edycjaA->setText(wektorNaTekst(modelArx->getA()));
-        edycjaB->setText(wektorNaTekst(modelArx->getB()));
-        return;
-    }
+    std::vector<double> noweA;
+    noweA.push_back(spinA1->value());
+    noweA.push_back(spinA2->value());
+    noweA.push_back(spinA3->value());
+
+
+    std::vector<double> noweB;
+    noweB.push_back(spinB1->value());
+    noweB.push_back(spinB2->value());
+    noweB.push_back(spinB3->value());
+
 
     modelArx->setA(noweA);
     modelArx->setB(noweB);
     modelArx->setOpoznienie(spinOpoznienie->value());
     modelArx->setSzum(spinSzum->value());
-}
-
-std::vector<double> KonfiguracjaARX::parsujWektor(const QString& tekst) {
-    std::vector<double> wek;
-    QStringList lista = tekst.split(',');
-    for (const QString& elem : lista) {
-        bool ok;
-        double val = elem.toDouble(&ok);
-        if (ok) wek.push_back(val);
-    }
-    return wek;
-}
-
-QString KonfiguracjaARX::wektorNaTekst(const std::vector<double>& wektor) {
-    QStringList lista;
-    for (double v : wektor) lista << QString::number(v);
-    return lista.join(", ");
 }
