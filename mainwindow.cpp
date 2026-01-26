@@ -39,7 +39,10 @@ MainWindow::MainWindow(QWidget *parent)
     connect(timerSymulacji, &QTimer::timeout, this, &MainWindow::krokSymulacji);
 
     aktualizujGenerator();
+
+    // Inicjalizacja zmiennych na podstawie wartości domyślnych kontrolek
     aktualizujOknoCzasowe();
+    aktualizujInterwal();
 }
 
 void MainWindow::konfigurujGUI() {
@@ -444,36 +447,14 @@ void MainWindow::aktualizujGenerator() {
                        spinGenCzasAkt->value());
 }
 
+
 void MainWindow::aktualizujOknoCzasowe() {
     oknoCzasowe = spinOknoCzasowe->value();
 
-
-    double nowyInterwal = (oknoCzasowe * 1000.0) / 50.0;
-    interwalMs = static_cast<int>(std::round(nowyInterwal));
-
-    spinInterwal->blockSignals(true);
-    spinInterwal->setValue(interwalMs);
-    spinInterwal->blockSignals(false);
-
-    if (czyDziala) {
-        timerSymulacji->setInterval(interwalMs);
-    }
 }
 
 void MainWindow::aktualizujInterwal() {
     interwalMs = spinInterwal->value();
-
-
-    double noweOkno = (interwalMs * 50.0) / 1000.0;
-
-    if (noweOkno < 5.0) noweOkno = 5.0;
-    if (noweOkno > 50.0) noweOkno = 50.0;
-
-    oknoCzasowe = noweOkno;
-
-    spinOknoCzasowe->blockSignals(true);
-    spinOknoCzasowe->setValue(oknoCzasowe);
-    spinOknoCzasowe->blockSignals(false);
 
     if (czyDziala) {
         timerSymulacji->setInterval(interwalMs);
