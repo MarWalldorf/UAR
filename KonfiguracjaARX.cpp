@@ -24,27 +24,27 @@ KonfiguracjaARX::KonfiguracjaARX(ModelARX* model, QWidget* parent)
     QVBoxLayout* layoutA = new QVBoxLayout(groupA);
 
 
-    layoutA->addWidget(new QLabel("a1 (zakres: -0.45 do 0):"));
+    layoutA->addWidget(new QLabel("a1"));
     spinA1 = new QDoubleSpinBox();
-    spinA1->setRange(-0.45, 0.0);
+    spinA1->setRange(-10.00, 10.0);
     spinA1->setSingleStep(0.01);
     spinA1->setDecimals(2);
     spinA1->setValue(wekA[0]);
     layoutA->addWidget(spinA1);
 
 
-    layoutA->addWidget(new QLabel("a2 (zakres: -0.40 do 0):"));
+    layoutA->addWidget(new QLabel("a2"));
     spinA2 = new QDoubleSpinBox();
-    spinA2->setRange(-0.40, 0.0);
+    spinA2->setRange(-10.00, 10.0);
     spinA2->setSingleStep(0.01);
     spinA2->setDecimals(2);
     spinA2->setValue(wekA[1]);
     layoutA->addWidget(spinA2);
 
 
-    layoutA->addWidget(new QLabel("a3 (zakres: -0.35 do 0):"));
+    layoutA->addWidget(new QLabel("a3"));
     spinA3 = new QDoubleSpinBox();
-    spinA3->setRange(-0.35, 0.0);
+    spinA3->setRange(-10.00, 10.0);
     spinA3->setSingleStep(0.01);
     spinA3->setDecimals(2);
     spinA3->setValue(wekA[2]);
@@ -57,27 +57,27 @@ KonfiguracjaARX::KonfiguracjaARX(ModelARX* model, QWidget* parent)
     QVBoxLayout* layoutB = new QVBoxLayout(groupB);
 
 
-    layoutB->addWidget(new QLabel("b1 (zakres: 0 do 2.50):"));
+    layoutB->addWidget(new QLabel("b1"));
     spinB1 = new QDoubleSpinBox();
-    spinB1->setRange(0.0, 2.50);
+    spinB1->setRange(-10.0, 10.00);
     spinB1->setSingleStep(0.01);
     spinB1->setDecimals(2);
     spinB1->setValue(wekB[0]);
     layoutB->addWidget(spinB1);
 
 
-    layoutB->addWidget(new QLabel("b2 (zakres: 0 do 0.80):"));
+    layoutB->addWidget(new QLabel("b2"));
     spinB2 = new QDoubleSpinBox();
-    spinB2->setRange(0.0, 0.80);
+    spinB2->setRange(-10.0, 10.00);
     spinB2->setSingleStep(0.01);
     spinB2->setDecimals(2);
     spinB2->setValue(wekB[1]);
     layoutB->addWidget(spinB2);
 
 
-    layoutB->addWidget(new QLabel("b3 (zakres: 0 do 0.50):"));
+    layoutB->addWidget(new QLabel("b3"));
     spinB3 = new QDoubleSpinBox();
-    spinB3->setRange(0.0, 0.50);
+    spinB3->setRange(-10.0, 10.00);
     spinB3->setSingleStep(0.01);
     spinB3->setDecimals(2);
     spinB3->setValue(wekB[2]);
