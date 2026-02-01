@@ -1,33 +1,37 @@
 #include "MainWindow.h"
 #include "KonfiguracjaARX.h"
 
-#include <QHBoxLayout>
-#include <QVBoxLayout>
-#include <QGroupBox>
-#include <QLabel>
-#include <QFormLayout>
+#include <QDebug>
 #include <QFileDialog>
+#include <QFormLayout>
+#include <QGroupBox>
+#include <QHBoxLayout>
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QJsonArray>
+#include <QLabel>
 #include <QMessageBox>
-#include <QDebug>
+#include <QVBoxLayout>
 #include <cmath>
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent),
+    : QMainWindow(parent)
+    ,
     // Inicjalizacja ARX: A, B, opóźnienie=1, szum=0
-    arx({-0.4, -0.3, -0.2}, {0.2, 0.1, 0.1}, 1, 0.0),
-    // PID: Kp=0.5, Ti=10, Td=0
-    pid(0.5, 10.0, 0.0),
+    arx({-0.4, 0.0, 0.0}, {0.6, 0.0, 0.0}, 1, 0.0)
+    ,
+    // PID: Kp=0.5, Ti=5.0, Td=0.2
+    pid(0.5, 5.0, 0.2)
+    ,
     // Generator: Prostokąt, Offset=0, Amp=1, T=10, Wyp=0.5, Akt=1.0
-    gen(Generator::TypSygnalu::PROSTOKATNY, 0, 1, 10, 0.5, 1.0),
-    petla(arx, pid),
-    aktualnyCzas(0.0),
-    czasBazy(0.0), // Inicjalizacja czasu bazy
-    czyDziala(false),
-    interwalMs(200),
-    oknoCzasowe(10.0)
+    gen(Generator::TypSygnalu::PROSTOKATNY, 0, 1, 10, 0.5, 1.0)
+    , petla(arx, pid)
+    , aktualnyCzas(0.0)
+    , czasBazy(0.0)
+    , // Inicjalizacja czasu bazy
+    czyDziala(false)
+    , interwalMs(200)
+    , oknoCzasowe(10.0)
 {
     konfigurujGUI();
     konfigurujWykresy();
@@ -45,7 +49,8 @@ MainWindow::MainWindow(QWidget *parent)
     aktualizujInterwal();
 }
 
-void MainWindow::konfigurujGUI() {
+void MainWindow::konfigurujGUI()
+{
     QWidget *centralny = new QWidget(this);
     setCentralWidget(centralny);
 
@@ -66,7 +71,10 @@ void MainWindow::konfigurujGUI() {
     spinOknoCzasowe->setValue(10.0);
     spinOknoCzasowe->setSuffix(" s");
     spinOknoCzasowe->setSingleStep(1.0);
-    connect(spinOknoCzasowe, &QDoubleSpinBox::editingFinished, this, &MainWindow::aktualizujOknoCzasowe);
+    connect(spinOknoCzasowe,
+            &QDoubleSpinBox::editingFinished,
+            this,
+            &MainWindow::aktualizujOknoCzasowe);
 
     spinInterwal = new QSpinBox();
     spinInterwal->setRange(10, 1000);
@@ -95,8 +103,8 @@ void MainWindow::konfigurujGUI() {
     QFormLayout *layoutPid = new QFormLayout();
 
     edycjaKp = new QLineEdit("0.5");
-    edycjaTi = new QLineEdit("10.0");
-    edycjaTd = new QLineEdit("0.0");
+    edycjaTi = new QLineEdit("5.0");
+    edycjaTd = new QLineEdit("0.2");
 
     connect(edycjaKp, &QLineEdit::editingFinished, this, &MainWindow::aktualizujPID);
     connect(edycjaTi, &QLineEdit::editingFinished, this, &MainWindow::aktualizujPID);
@@ -105,7 +113,10 @@ void MainWindow::konfigurujGUI() {
     comboMetodaCalk = new QComboBox();
     comboMetodaCalk->addItem("Stała pod sumą", 0);
     comboMetodaCalk->addItem("Stała przed sumą", 1);
-    connect(comboMetodaCalk, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &MainWindow::aktualizujPID);
+    connect(comboMetodaCalk,
+            QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this,
+            &MainWindow::aktualizujPID);
     comboMetodaCalk->setCurrentIndex(1);
 
     QPushButton *btnResetI = new QPushButton("Reset Pamięci Całki");
@@ -128,19 +139,39 @@ void MainWindow::konfigurujGUI() {
     comboGenTyp->addItem("Sinus", 1);
     comboGenTyp->addItem("Skok jednostkowy", 2);
 
-    connect(comboGenTyp, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &MainWindow::aktualizujGenerator);
+    connect(comboGenTyp,
+            QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this,
+            &MainWindow::aktualizujGenerator);
 
-    spinGenOffset = new QDoubleSpinBox(); spinGenOffset->setRange(-100, 100); spinGenOffset->setValue(0);
-    spinGenAmp = new QDoubleSpinBox(); spinGenAmp->setRange(-100, 100); spinGenAmp->setValue(1);
-    spinGenOkres = new QDoubleSpinBox(); spinGenOkres->setRange(0.1, 1000); spinGenOkres->setValue(10);
-    spinGenWypelnienie = new QDoubleSpinBox(); spinGenWypelnienie->setRange(0.0, 1.0); spinGenWypelnienie->setValue(0.5); spinGenWypelnienie->setSingleStep(0.1);
-    spinGenCzasAkt = new QDoubleSpinBox(); spinGenCzasAkt->setRange(0.0, 1000.0); spinGenCzasAkt->setValue(1.0);
+    spinGenOffset = new QDoubleSpinBox();
+    spinGenOffset->setRange(-100, 100);
+    spinGenOffset->setValue(0);
+    spinGenAmp = new QDoubleSpinBox();
+    spinGenAmp->setRange(-100, 100);
+    spinGenAmp->setValue(1);
+    spinGenOkres = new QDoubleSpinBox();
+    spinGenOkres->setRange(0.1, 1000);
+    spinGenOkres->setValue(10);
+    spinGenWypelnienie = new QDoubleSpinBox();
+    spinGenWypelnienie->setRange(0.0, 1.0);
+    spinGenWypelnienie->setValue(0.5);
+    spinGenWypelnienie->setSingleStep(0.1);
+    spinGenCzasAkt = new QDoubleSpinBox();
+    spinGenCzasAkt->setRange(0.0, 1000.0);
+    spinGenCzasAkt->setValue(1.0);
 
     connect(spinGenOffset, &QDoubleSpinBox::editingFinished, this, &MainWindow::aktualizujGenerator);
     connect(spinGenAmp, &QDoubleSpinBox::editingFinished, this, &MainWindow::aktualizujGenerator);
     connect(spinGenOkres, &QDoubleSpinBox::editingFinished, this, &MainWindow::aktualizujGenerator);
-    connect(spinGenWypelnienie, &QDoubleSpinBox::editingFinished, this, &MainWindow::aktualizujGenerator);
-    connect(spinGenCzasAkt, &QDoubleSpinBox::editingFinished, this, &MainWindow::aktualizujGenerator);
+    connect(spinGenWypelnienie,
+            &QDoubleSpinBox::editingFinished,
+            this,
+            &MainWindow::aktualizujGenerator);
+    connect(spinGenCzasAkt,
+            &QDoubleSpinBox::editingFinished,
+            this,
+            &MainWindow::aktualizujGenerator);
 
     layoutGen->addRow("Kształt:", comboGenTyp);
     layoutGen->addRow("Składowa stała:", spinGenOffset);
@@ -169,7 +200,7 @@ void MainWindow::konfigurujGUI() {
     siatkaWykresow->setSpacing(0);
     siatkaWykresow->setContentsMargins(0, 0, 0, 0);
 
-    auto dodajWykres = [&](QChart* chart, int r, int c, int rSpan, int cSpan) {
+    auto dodajWykres = [&](QChart *chart, int r, int c, int rSpan, int cSpan) {
         QChartView *view = new QChartView(chart);
         view->setRenderHint(QPainter::Antialiasing);
         view->setContentsMargins(0, 0, 0, 0);
@@ -200,8 +231,9 @@ void MainWindow::konfigurujGUI() {
     glownyLayout->setStretch(1, 12);
 }
 
-void MainWindow::konfigurujWykresy() {
-    auto setupChart = [](QChart* chart, QString tytul, QValueAxis*& axX, QValueAxis*& axY) {
+void MainWindow::konfigurujWykresy()
+{
+    auto setupChart = [](QChart *chart, QString tytul, QValueAxis *&axX, QValueAxis *&axY) {
         chart->setTitle(tytul);
         chart->legend()->hide();
         chart->setBackgroundRoundness(0);
@@ -224,42 +256,61 @@ void MainWindow::konfigurujWykresy() {
     wykresGlowny->legend()->show();
     wykresGlowny->legend()->setAlignment(Qt::AlignTop);
 
-    seriaZadana = new QLineSeries(); seriaZadana->setName("Zadana w(t)");
-    seriaWyjscie = new QLineSeries(); seriaWyjscie->setName("Regulowana y(t)");
+    seriaZadana = new QLineSeries();
+    seriaZadana->setName("Zadana w(t)");
+    seriaWyjscie = new QLineSeries();
+    seriaWyjscie->setName("Regulowana y(t)");
     wykresGlowny->addSeries(seriaZadana);
     wykresGlowny->addSeries(seriaWyjscie);
-    seriaZadana->attachAxis(osXGlowny); seriaZadana->attachAxis(osYGlowny);
-    seriaWyjscie->attachAxis(osXGlowny); seriaWyjscie->attachAxis(osYGlowny);
+    seriaZadana->attachAxis(osXGlowny);
+    seriaZadana->attachAxis(osYGlowny);
+    seriaWyjscie->attachAxis(osXGlowny);
+    seriaWyjscie->attachAxis(osYGlowny);
 
     // Wykres Uchybu
     setupChart(wykresUchyb, "Uchyb Regulacji e(t)", osXUchyb, osYUchyb);
-    seriaUchyb = new QLineSeries(); seriaUchyb->setName("Uchyb");
+    seriaUchyb = new QLineSeries();
+    seriaUchyb->setName("Uchyb");
     wykresUchyb->addSeries(seriaUchyb);
-    seriaUchyb->attachAxis(osXUchyb); seriaUchyb->attachAxis(osYUchyb);
+    seriaUchyb->attachAxis(osXUchyb);
+    seriaUchyb->attachAxis(osYUchyb);
 
     // Wykres Sterowania
     setupChart(wykresSterowanie, "Sygnał Sterujący u(t)", osXSterowanie, osYSterowanie);
-    seriaSterowanie = new QLineSeries(); seriaSterowanie->setName("Sterowanie");
+    seriaSterowanie = new QLineSeries();
+    seriaSterowanie->setName("Sterowanie");
     wykresSterowanie->addSeries(seriaSterowanie);
-    seriaSterowanie->attachAxis(osXSterowanie); seriaSterowanie->attachAxis(osYSterowanie);
+    seriaSterowanie->attachAxis(osXSterowanie);
+    seriaSterowanie->attachAxis(osYSterowanie);
 
     // Wykres PID
     setupChart(wykresPID, "Składowe Regulatora (P, I, D)", osXPID, osYPID);
     wykresPID->legend()->show();
     wykresPID->legend()->setAlignment(Qt::AlignTop);
 
-    seriaP = new QLineSeries(); seriaP->setName("P");
-    seriaI = new QLineSeries(); seriaI->setName("I");
-    seriaD = new QLineSeries(); seriaD->setName("D");
+    seriaP = new QLineSeries();
+    seriaP->setName("P");
+    seriaI = new QLineSeries();
+    seriaI->setName("I");
+    seriaD = new QLineSeries();
+    seriaD->setName("D");
 
-    wykresPID->addSeries(seriaP); wykresPID->addSeries(seriaI); wykresPID->addSeries(seriaD);
-    seriaP->attachAxis(osXPID); seriaP->attachAxis(osYPID);
-    seriaI->attachAxis(osXPID); seriaI->attachAxis(osYPID);
-    seriaD->attachAxis(osXPID); seriaD->attachAxis(osYPID);
+    wykresPID->addSeries(seriaP);
+    wykresPID->addSeries(seriaI);
+    wykresPID->addSeries(seriaD);
+    seriaP->attachAxis(osXPID);
+    seriaP->attachAxis(osYPID);
+    seriaI->attachAxis(osXPID);
+    seriaI->attachAxis(osYPID);
+    seriaD->attachAxis(osXPID);
+    seriaD->attachAxis(osYPID);
 }
 
-void MainWindow::krokSymulacji() {
-    double dt = interwalMs / 1000.0;
+void MainWindow::krokSymulacji()
+{
+    double dt_gui = interwalMs / 1000.0;
+
+    double dt_math = 1.0;
 
     double czasRzeczywistyTarget = czasBazy + (licznikCzasuRzeczywistego.elapsed() / 1000.0);
 
@@ -271,16 +322,19 @@ void MainWindow::krokSymulacji() {
     int wykonaneKroki = 0;
 
     while (aktualnyCzas < czasRzeczywistyTarget && wykonaneKroki < maxKrokow) {
-        aktualnyCzas += dt;
+
+        aktualnyCzas += dt_gui;
 
         ost_w = gen.generuj(aktualnyCzas);
-        ost_y = petla.wykonaj_krok(ost_w, dt);
+
+        ost_y = petla.wykonaj_krok(ost_w, dt_math);
+
         ost_e = ost_w - ost_y;
 
         wykonaneKroki++;
     }
 
-    if (aktualnyCzas < czasRzeczywistyTarget - dt) {
+    if (aktualnyCzas < czasRzeczywistyTarget - dt_gui) {
         aktualnyCzas = czasRzeczywistyTarget;
     }
 
@@ -290,8 +344,9 @@ void MainWindow::krokSymulacji() {
     }
 }
 
-void MainWindow::aktualizujDaneWykresow(double t, double w, double y, double e, double u) {
-    int limitPunktow = 3000;
+void MainWindow::aktualizujDaneWykresow(double t, double w, double y, double e, double u)
+{
+    int limitPunktow = 1000;
 
     // Dodawanie punktów
     seriaZadana->append(t, w);
@@ -303,7 +358,7 @@ void MainWindow::aktualizujDaneWykresow(double t, double w, double y, double e, 
     seriaD->append(t, pid.pobierzOstatnieD());
 
     // Przesuwanie osi X
-    auto przesunOs = [&](QValueAxis* ax) {
+    auto przesunOs = [&](QValueAxis *ax) {
         if (t > this->oknoCzasowe) {
             ax->setRange(t - this->oknoCzasowe, t);
         } else {
@@ -319,33 +374,40 @@ void MainWindow::aktualizujDaneWykresow(double t, double w, double y, double e, 
 
     // Czyszczenie starych punktów
     if (seriaZadana->count() > limitPunktow) {
-        seriaZadana->remove(0); seriaWyjscie->remove(0);
-        seriaUchyb->remove(0); seriaSterowanie->remove(0);
-        seriaP->remove(0); seriaI->remove(0); seriaD->remove(0);
+        seriaZadana->remove(0);
+        seriaWyjscie->remove(0);
+        seriaUchyb->remove(0);
+        seriaSterowanie->remove(0);
+        seriaP->remove(0);
+        seriaI->remove(0);
+        seriaD->remove(0);
     }
 
     // Auto-skalowanie Y (tylko dla danych widocznych w oknie)
     double minCzasWidoczny = (t > this->oknoCzasowe) ? t - this->oknoCzasowe : 0.0;
 
-    auto autoScale = [&](const QList<QLineSeries*>& serie, QValueAxis* ay) {
+    auto autoScale = [&](const QList<QLineSeries *> &serie, QValueAxis *ay) {
         double minV = 1e9, maxV = -1e9;
         bool znaleziono = false;
 
-        for(auto s : serie) {
+        for (auto s : serie) {
+            const auto &punkty = s->points();
+            for (int i = punkty.size() - 1; i >= 0; --i) {
+                const QPointF &p = punkty[i];
+                if (p.x() < minCzasWidoczny)
+                    break;
 
-            const auto& punkty = s->points();
-            for(int i = punkty.size()-1; i >= 0; --i) {
-                const QPointF& p = punkty[i];
-                if (p.x() < minCzasWidoczny) break;
-
-                if(p.y() < minV) minV = p.y();
-                if(p.y() > maxV) maxV = p.y();
+                if (p.y() < minV)
+                    minV = p.y();
+                if (p.y() > maxV)
+                    maxV = p.y();
                 znaleziono = true;
             }
         }
 
         if (!znaleziono) {
-            minV = -1.0; maxV = 1.0;
+            minV = -1.0;
+            maxV = 1.0;
         } else if (std::abs(maxV - minV) < 1e-9) {
             maxV = minV + 0.1;
             minV = minV - 0.1;
@@ -363,15 +425,14 @@ void MainWindow::aktualizujDaneWykresow(double t, double w, double y, double e, 
     autoScale({seriaP, seriaI, seriaD}, osYPID);
 }
 
-void MainWindow::przelaczSymulacje() {
+void MainWindow::przelaczSymulacje()
+{
     if (czyDziala) {
-
         timerSymulacji->stop();
         btnStartStop->setText("Start");
 
         czasBazy += licznikCzasuRzeczywistego.elapsed() / 1000.0;
     } else {
-
         licznikCzasuRzeczywistego.restart();
         timerSymulacji->start(interwalMs);
         btnStartStop->setText("Stop");
@@ -379,7 +440,8 @@ void MainWindow::przelaczSymulacje() {
     czyDziala = !czyDziala;
 }
 
-void MainWindow::zresetujSymulacje() {
+void MainWindow::zresetujSymulacje()
+{
     timerSymulacji->stop();
     czyDziala = false;
     btnStartStop->setText("Start");
@@ -398,7 +460,7 @@ void MainWindow::zresetujSymulacje() {
     seriaI->clear();
     seriaD->clear();
 
-    auto resetujOsX = [&](QValueAxis* ax) {
+    auto resetujOsX = [&](QValueAxis *ax) {
         ax->setRange(0, this->oknoCzasowe);
         ax->setTickCount(11);
     };
@@ -411,13 +473,15 @@ void MainWindow::zresetujSymulacje() {
     aktualizujGenerator();
 }
 
-void MainWindow::otworzKonfiguracjeARX() {
-    KonfiguracjaARX* okno = new KonfiguracjaARX(&arx, this);
+void MainWindow::otworzKonfiguracjeARX()
+{
+    KonfiguracjaARX *okno = new KonfiguracjaARX(&arx, this);
     okno->setAttribute(Qt::WA_DeleteOnClose);
     okno->show();
 }
 
-void MainWindow::aktualizujPID() {
+void MainWindow::aktualizujPID()
+{
     pid.setKp(edycjaKp->text().toDouble());
     pid.setTi(edycjaTi->text().toDouble());
     pid.setTd(edycjaTd->text().toDouble());
@@ -428,12 +492,15 @@ void MainWindow::aktualizujPID() {
         pid.setMetodaCalkowania(RegulatorPID::MetodaCalkowania::STALA_PRZED_SUMA);
 }
 
-void MainWindow::aktualizujGenerator() {
+void MainWindow::aktualizujGenerator()
+{
     Generator::TypSygnalu typ = Generator::TypSygnalu::PROSTOKATNY;
     int idx = comboGenTyp->currentIndex();
 
-    if (idx == 1) typ = Generator::TypSygnalu::SINUSOIDALNY;
-    else if (idx == 2) typ = Generator::TypSygnalu::SKOK;
+    if (idx == 1)
+        typ = Generator::TypSygnalu::SINUSOIDALNY;
+    else if (idx == 2)
+        typ = Generator::TypSygnalu::SKOK;
 
     bool czyOkresowy = (idx != 2);
     spinGenOkres->setEnabled(czyOkresowy);
@@ -447,13 +514,13 @@ void MainWindow::aktualizujGenerator() {
                        spinGenCzasAkt->value());
 }
 
-
-void MainWindow::aktualizujOknoCzasowe() {
+void MainWindow::aktualizujOknoCzasowe()
+{
     oknoCzasowe = spinOknoCzasowe->value();
-
 }
 
-void MainWindow::aktualizujInterwal() {
+void MainWindow::aktualizujInterwal()
+{
     interwalMs = spinInterwal->value();
 
     if (czyDziala) {
@@ -461,19 +528,24 @@ void MainWindow::aktualizujInterwal() {
     }
 }
 
-void MainWindow::zresetujCalkePID() {
+void MainWindow::zresetujCalkePID()
+{
     pid.zresetuj();
 }
 
-void MainWindow::zapiszKonfiguracje() {
+void MainWindow::zapiszKonfiguracje()
+{
     QJsonObject root;
 
     // ARX
     QJsonObject jArx;
     QJsonArray arrA, arrB;
-    for(double v : arx.getA()) arrA.append(v);
-    for(double v : arx.getB()) arrB.append(v);
-    jArx["A"] = arrA; jArx["B"] = arrB;
+    for (double v : arx.getA())
+        arrA.append(v);
+    for (double v : arx.getB())
+        arrB.append(v);
+    jArx["A"] = arrA;
+    jArx["B"] = arrB;
     jArx["k"] = arx.getOpoznienie();
     jArx["szum"] = arx.getSzum();
     root["ARX"] = jArx;
@@ -483,12 +555,12 @@ void MainWindow::zapiszKonfiguracje() {
     jPid["Kp"] = pid.getKp();
     jPid["Ti"] = pid.getTi();
     jPid["Td"] = pid.getTd();
-    jPid["Metoda"] = (int)pid.getMetodaCalkowania();
+    jPid["Metoda"] = (int) pid.getMetodaCalkowania();
     root["PID"] = jPid;
 
     // Generator
     QJsonObject jGen;
-    jGen["Typ"] = (int)gen.getTyp();
+    jGen["Typ"] = (int) gen.getTyp();
     jGen["Pocz"] = gen.getPoczatkowa();
     jGen["Zm"] = gen.getZmiana();
     jGen["Czas"] = gen.getCzasZmiany();
@@ -500,10 +572,11 @@ void MainWindow::zapiszKonfiguracje() {
     root["OknoCzasowe"] = oknoCzasowe;
 
     QString sciezka = QFileDialog::getSaveFileName(this, "Zapisz Konfigurację", "", "JSON (*.json)");
-    if(sciezka.isEmpty()) return;
+    if (sciezka.isEmpty())
+        return;
 
     QFile plik(sciezka);
-    if(plik.open(QIODevice::WriteOnly)) {
+    if (plik.open(QIODevice::WriteOnly)) {
         QJsonDocument doc(root);
         plik.write(doc.toJson());
         plik.close();
@@ -512,12 +585,17 @@ void MainWindow::zapiszKonfiguracje() {
     }
 }
 
-void MainWindow::wczytajKonfiguracje() {
-    QString sciezka = QFileDialog::getOpenFileName(this, "Wczytaj Konfigurację", "", "JSON (*.json)");
-    if(sciezka.isEmpty()) return;
+void MainWindow::wczytajKonfiguracje()
+{
+    QString sciezka = QFileDialog::getOpenFileName(this,
+                                                   "Wczytaj Konfigurację",
+                                                   "",
+                                                   "JSON (*.json)");
+    if (sciezka.isEmpty())
+        return;
 
     QFile plik(sciezka);
-    if(!plik.open(QIODevice::ReadOnly)) {
+    if (!plik.open(QIODevice::ReadOnly)) {
         QMessageBox::critical(this, "Błąd", "Nie można otworzyć pliku!");
         return;
     }
@@ -526,17 +604,20 @@ void MainWindow::wczytajKonfiguracje() {
     QJsonObject root = doc.object();
     plik.close();
 
-    if(root.contains("ARX")) {
+    if (root.contains("ARX")) {
         QJsonObject jArx = root["ARX"].toObject();
         std::vector<double> va, vb;
-        for(auto v : jArx["A"].toArray()) va.push_back(v.toDouble());
-        for(auto v : jArx["B"].toArray()) vb.push_back(v.toDouble());
-        arx.setA(va); arx.setB(vb);
+        for (auto v : jArx["A"].toArray())
+            va.push_back(v.toDouble());
+        for (auto v : jArx["B"].toArray())
+            vb.push_back(v.toDouble());
+        arx.setA(va);
+        arx.setB(vb);
         arx.setOpoznienie(jArx["k"].toInt());
         arx.setSzum(jArx["szum"].toDouble());
     }
 
-    if(root.contains("PID")) {
+    if (root.contains("PID")) {
         QJsonObject jPid = root["PID"].toObject();
         edycjaKp->setText(QString::number(jPid["Kp"].toDouble()));
         edycjaTi->setText(QString::number(jPid["Ti"].toDouble()));
@@ -544,14 +625,14 @@ void MainWindow::wczytajKonfiguracje() {
 
         int zapisanaMetoda = jPid["Metoda"].toInt();
         int indeksDoUstawienia = 0;
-        if ((int)RegulatorPID::MetodaCalkowania::STALA_PRZED_SUMA == zapisanaMetoda) {
+        if ((int) RegulatorPID::MetodaCalkowania::STALA_PRZED_SUMA == zapisanaMetoda) {
             indeksDoUstawienia = 1;
         }
         comboMetodaCalk->setCurrentIndex(indeksDoUstawienia);
         aktualizujPID();
     }
 
-    if(root.contains("Gen")) {
+    if (root.contains("Gen")) {
         QJsonObject jGen = root["Gen"].toObject();
         comboGenTyp->setCurrentIndex(jGen["Typ"].toInt());
         spinGenOffset->setValue(jGen["Pocz"].toDouble());
@@ -562,13 +643,13 @@ void MainWindow::wczytajKonfiguracje() {
         aktualizujGenerator();
     }
 
-    if(root.contains("Interwal")) {
+    if (root.contains("Interwal")) {
         interwalMs = root["Interwal"].toInt();
         spinInterwal->setValue(interwalMs);
         aktualizujInterwal();
     }
 
-    if(root.contains("OknoCzasowe")) {
+    if (root.contains("OknoCzasowe")) {
         oknoCzasowe = root["OknoCzasowe"].toDouble();
         spinOknoCzasowe->setValue(oknoCzasowe);
         aktualizujOknoCzasowe();

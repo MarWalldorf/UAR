@@ -4,12 +4,10 @@
 
 class ProstyUAR;
 
-class RegulatorPID {
+class RegulatorPID
+{
 public:
-    enum class MetodaCalkowania {
-        STALA_PRZED_SUMA,
-        STALA_W_SUMIE
-    };
+    enum class MetodaCalkowania { STALA_PRZED_SUMA, STALA_W_SUMIE };
 
     explicit RegulatorPID(double k, double ti = 0.0, double td = 0.0);
 
@@ -19,21 +17,22 @@ public:
     void setMetodaCalkowania(MetodaCalkowania metoda);
     MetodaCalkowania getMetodaCalkowania() const;
 
-    void setKp(double k); double getKp() const;
-    void setTi(double ti); double getTi() const;
-    void setTd(double td); double getTd() const;
+    void setKp(double k);
+    double getKp() const;
+    void setTi(double ti);
+    double getTi() const;
+    void setTd(double td);
+    double getTd() const;
     void zresetuj();
 
     double pobierzOstatnieP() const { return ostatnie_P; }
     double pobierzOstatnieI() const { return ostatnie_I; }
     double pobierzOstatnieD() const { return ostatnie_D; }
 
-
     enum class LiczCalk { Wew, Zew };
 
     void setLiczCalk(LiczCalk m);
     void setStalaCalk(double ti);
-
 
     double symuluj(double e);
 
@@ -49,7 +48,5 @@ private:
     double ostatnie_I;
     double ostatnie_D;
 };
-
-
 
 #endif // REGULATORPID_H

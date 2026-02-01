@@ -1,22 +1,23 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QMainWindow>
-#include <QTimer>
-#include <QtCharts>
-#include <QLineEdit>
 #include <QComboBox>
-#include <QSpinBox>
-#include <QPushButton>
 #include <QDoubleSpinBox>
 #include <QElapsedTimer>
+#include <QLineEdit>
+#include <QMainWindow>
+#include <QPushButton>
+#include <QSpinBox>
+#include <QTimer>
+#include <QtCharts>
 
-#include "ModelARX.h"
-#include "RegulatorPID.h"
 #include "Generator.h"
+#include "ModelARX.h"
 #include "Petla_Sprzezenia.h"
+#include "RegulatorPID.h"
 
-class MainWindow : public QMainWindow {
+class MainWindow : public QMainWindow
+{
     Q_OBJECT
 
 public:
@@ -44,13 +45,11 @@ private:
     Generator gen;
     Petla_Sprzezenia petla;
 
-    QTimer* timerSymulacji;
-
+    QTimer *timerSymulacji;
 
     QElapsedTimer licznikCzasuRzeczywistego;
     double czasBazy;
     double aktualnyCzas;
-
 
     bool czyDziala;
     int interwalMs;

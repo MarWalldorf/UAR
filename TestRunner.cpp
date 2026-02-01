@@ -1,8 +1,9 @@
 #include "TestRunner.h"
-#include <iostream>
 #include "Testy_UAR.cpp"
+#include <iostream>
 
-void TestRunner::runAllTests() {
+void TestRunner::runAllTests()
+{
     StatystykiTestow::reset();
 
     std::cerr << "=== ROZPOCZECIE TESTOW ===\n\n";

@@ -5,9 +5,10 @@
 
 class RegulatorPID;
 
-class ProstyUAR {
+class ProstyUAR
+{
 public:
-    ProstyUAR(ModelARX& arx, RegulatorPID& pid);
+    ProstyUAR(ModelARX &arx, RegulatorPID &pid);
 
     // Główna funkcja symulacji pętli zamkniętej
     // w - wartość zadana
@@ -15,8 +16,8 @@ public:
     double symuluj(double w);
 
 private:
-    ModelARX& model;
-    RegulatorPID& regulator;
+    ModelARX &model;
+    RegulatorPID &regulator;
     double poprzednie_y; // Do obliczenia uchybu e = w - y(k-1)
 };
 

@@ -1,28 +1,29 @@
 #include "KonfiguracjaARX.h"
-#include <QVBoxLayout>
+#include <QGroupBox>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QPushButton>
-#include <QGroupBox>
+#include <QVBoxLayout>
 
-KonfiguracjaARX::KonfiguracjaARX(ModelARX* model, QWidget* parent)
-    : QDialog(parent), modelArx(model) {
+KonfiguracjaARX::KonfiguracjaARX(ModelARX *model, QWidget *parent)
+    : QDialog(parent)
+    , modelArx(model)
+{
     setWindowTitle("Konfiguracja Modelu ARX");
     setModal(false);
     resize(350, 450);
 
-    QVBoxLayout* mainLayout = new QVBoxLayout(this);
-
+    QVBoxLayout *mainLayout = new QVBoxLayout(this);
 
     std::vector<double> wekA = modelArx->getA();
     std::vector<double> wekB = modelArx->getB();
-    if (wekA.size() < 3) wekA.resize(3, 0.0);
-    if (wekB.size() < 3) wekB.resize(3, 0.0);
+    if (wekA.size() < 3)
+        wekA.resize(3, 0.0);
+    if (wekB.size() < 3)
+        wekB.resize(3, 0.0);
 
-
-    QGroupBox* groupA = new QGroupBox("Współczynniki A");
-    QVBoxLayout* layoutA = new QVBoxLayout(groupA);
-
+    QGroupBox *groupA = new QGroupBox("Współczynniki A");
+    QVBoxLayout *layoutA = new QVBoxLayout(groupA);
 
     layoutA->addWidget(new QLabel("a1"));
     spinA1 = new QDoubleSpinBox();
@@ -32,7 +33,6 @@ KonfiguracjaARX::KonfiguracjaARX(ModelARX* model, QWidget* parent)
     spinA1->setValue(wekA[0]);
     layoutA->addWidget(spinA1);
 
-
     layoutA->addWidget(new QLabel("a2"));
     spinA2 = new QDoubleSpinBox();
     spinA2->setRange(-10.00, 10.0);
@@ -40,7 +40,6 @@ KonfiguracjaARX::KonfiguracjaARX(ModelARX* model, QWidget* parent)
     spinA2->setDecimals(2);
     spinA2->setValue(wekA[1]);
     layoutA->addWidget(spinA2);
-
 
     layoutA->addWidget(new QLabel("a3"));
     spinA3 = new QDoubleSpinBox();
@@ -52,10 +51,8 @@ KonfiguracjaARX::KonfiguracjaARX(ModelARX* model, QWidget* parent)
 
     mainLayout->addWidget(groupA);
 
-
-    QGroupBox* groupB = new QGroupBox("Współczynniki B");
-    QVBoxLayout* layoutB = new QVBoxLayout(groupB);
-
+    QGroupBox *groupB = new QGroupBox("Współczynniki B");
+    QVBoxLayout *layoutB = new QVBoxLayout(groupB);
 
     layoutB->addWidget(new QLabel("b1"));
     spinB1 = new QDoubleSpinBox();
@@ -65,7 +62,6 @@ KonfiguracjaARX::KonfiguracjaARX(ModelARX* model, QWidget* parent)
     spinB1->setValue(wekB[0]);
     layoutB->addWidget(spinB1);
 
-
     layoutB->addWidget(new QLabel("b2"));
     spinB2 = new QDoubleSpinBox();
     spinB2->setRange(-10.0, 10.00);
@@ -73,7 +69,6 @@ KonfiguracjaARX::KonfiguracjaARX(ModelARX* model, QWidget* parent)
     spinB2->setDecimals(2);
     spinB2->setValue(wekB[1]);
     layoutB->addWidget(spinB2);
-
 
     layoutB->addWidget(new QLabel("b3"));
     spinB3 = new QDoubleSpinBox();
@@ -85,9 +80,8 @@ KonfiguracjaARX::KonfiguracjaARX(ModelARX* model, QWidget* parent)
 
     mainLayout->addWidget(groupB);
 
-
-    QGroupBox* groupOther = new QGroupBox("Pozostałe parametry");
-    QVBoxLayout* layoutOther = new QVBoxLayout(groupOther);
+    QGroupBox *groupOther = new QGroupBox("Pozostałe parametry");
+    QVBoxLayout *layoutOther = new QVBoxLayout(groupOther);
 
     layoutOther->addWidget(new QLabel("Opóźnienie transportowe (k):"));
     spinOpoznienie = new QSpinBox();
@@ -105,29 +99,28 @@ KonfiguracjaARX::KonfiguracjaARX(ModelARX* model, QWidget* parent)
 
     mainLayout->addWidget(groupOther);
 
-    QPushButton* btnZamknij = new QPushButton("Zastosuj i Zamknij");
+    QPushButton *btnZamknij = new QPushButton("Zastosuj i Zamknij");
     connect(btnZamknij, &QPushButton::clicked, this, &KonfiguracjaARX::close);
     mainLayout->addWidget(btnZamknij);
 }
 
-void KonfiguracjaARX::closeEvent(QCloseEvent* event) {
+void KonfiguracjaARX::closeEvent(QCloseEvent *event)
+{
     zapiszZmiany();
     QDialog::closeEvent(event);
 }
 
-void KonfiguracjaARX::zapiszZmiany() {
-
+void KonfiguracjaARX::zapiszZmiany()
+{
     std::vector<double> noweA;
     noweA.push_back(spinA1->value());
     noweA.push_back(spinA2->value());
     noweA.push_back(spinA3->value());
 
-
     std::vector<double> noweB;
     noweB.push_back(spinB1->value());
     noweB.push_back(spinB2->value());
     noweB.push_back(spinB3->value());
-
 
     modelArx->setA(noweA);
     modelArx->setB(noweB);

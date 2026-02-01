@@ -1,12 +1,14 @@
 #include "ProstyUAR.h"
 #include "RegulatorPID.h"
 
-ProstyUAR::ProstyUAR(ModelARX& arx, RegulatorPID& pid)
-    : model(arx), regulator(pid), poprzednie_y(0.0)
-{
-}
+ProstyUAR::ProstyUAR(ModelARX &arx, RegulatorPID &pid)
+    : model(arx)
+    , regulator(pid)
+    , poprzednie_y(0.0)
+{}
 
-double ProstyUAR::symuluj(double w) {
+double ProstyUAR::symuluj(double w)
+{
     // Oblicz uchyb (wartość zadana - wyjście z poprzedniego kroku)
     double e = w - poprzednie_y;
 

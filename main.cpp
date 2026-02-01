@@ -1,7 +1,6 @@
-#include "MainWindow.h"
 #include <QApplication>
+#include "MainWindow.h"
 #include "TestRunner.h"
-
 
 // Ustaw na true, aby uruchomić testy w konsoli.
 // Ustaw na false, aby uruchomić GUI.
@@ -12,13 +11,10 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
 
     if (RUN_TESTS_ONLY) {
-
-
         TestRunner::runAllTests();
 
         return 0;
     } else {
-
         MainWindow w;
         w.setWindowTitle("Symulator UAR - Model ARX + PID");
         w.resize(1600, 1000);
@@ -26,9 +22,3 @@ int main(int argc, char *argv[])
         return a.exec();
     }
 }
-
-
-
-
-
-

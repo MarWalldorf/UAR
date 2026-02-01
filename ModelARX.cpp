@@ -1,13 +1,18 @@
 #include "ModelARX.h"
 
-ModelARX::ModelARX(const std::vector<double>& a, const std::vector<double>& b, int k, double stddev)
-    : wspolczynniki_A(a), wspolczynniki_B(b), opoznienie(k), stddev_szumu(stddev),
-    gen(std::random_device{}()), dist(0.0, 1.0)
+ModelARX::ModelARX(const std::vector<double> &a, const std::vector<double> &b, int k, double stddev)
+    : wspolczynniki_A(a)
+    , wspolczynniki_B(b)
+    , opoznienie(k)
+    , stddev_szumu(stddev)
+    , gen(std::random_device{}())
+    , dist(0.0, 1.0)
 {
     zresetuj_stan();
 }
 
-void ModelARX::zresetuj_stan() {
+void ModelARX::zresetuj_stan()
+{
     bufor_opoznienia.clear();
     bufor_opoznienia.resize(opoznienie, 0.0);
 
@@ -15,51 +20,76 @@ void ModelARX::zresetuj_stan() {
     historia_U.assign(wspolczynniki_B.size(), 0.0);
 }
 
-void ModelARX::setA(const std::vector<double>& a) {
-    if (a == wspolczynniki_A) return;
+void ModelARX::setA(const std::vector<double> &a)
+{
+    if (a == wspolczynniki_A)
+        return;
 
     // Przepisanie starej historii do nowego wektora (zapobiega skokom/resetowi)
     std::vector<double> nowaHistoria(a.size(), 0.0);
     size_t doSkopiowania = std::min(historia_Y.size(), nowaHistoria.size());
-    for(size_t i=0; i<doSkopiowania; ++i) nowaHistoria[i] = historia_Y[i];
+    for (size_t i = 0; i < doSkopiowania; ++i)
+        nowaHistoria[i] = historia_Y[i];
 
     historia_Y = nowaHistoria;
     wspolczynniki_A = a;
 }
 
-void ModelARX::setB(const std::vector<double>& b) {
-    if (b == wspolczynniki_B) return;
+void ModelARX::setB(const std::vector<double> &b)
+{
+    if (b == wspolczynniki_B)
+        return;
 
     std::vector<double> nowaHistoria(b.size(), 0.0);
     size_t doSkopiowania = std::min(historia_U.size(), nowaHistoria.size());
-    for(size_t i=0; i<doSkopiowania; ++i) nowaHistoria[i] = historia_U[i];
+    for (size_t i = 0; i < doSkopiowania; ++i)
+        nowaHistoria[i] = historia_U[i];
 
     historia_U = nowaHistoria;
     wspolczynniki_B = b;
 }
 
-void ModelARX::setOpoznienie(int k) {
-    if (k < 0) k = 0;
-    if (k == opoznienie) return;
+void ModelARX::setOpoznienie(int k)
+{
+    if (k < 0)
+        k = 0;
+    if (k == opoznienie)
+        return;
 
     // Dostosowanie bufora opóźnienia
     if (k > opoznienie) {
         bufor_opoznienia.resize(k, 0.0);
     } else {
-        while (bufor_opoznienia.size() > (size_t)k) {
+        while (bufor_opoznienia.size() > (size_t) k) {
             bufor_opoznienia.pop_front();
         }
     }
     opoznienie = k;
 }
 
-void ModelARX::setSzum(double stddev) { stddev_szumu = stddev; }
-double ModelARX::getSzum() const { return stddev_szumu; }
-std::vector<double> ModelARX::getA() const { return wspolczynniki_A; }
-std::vector<double> ModelARX::getB() const { return wspolczynniki_B; }
-int ModelARX::getOpoznienie() const { return opoznienie; }
+void ModelARX::setSzum(double stddev)
+{
+    stddev_szumu = stddev;
+}
+double ModelARX::getSzum() const
+{
+    return stddev_szumu;
+}
+std::vector<double> ModelARX::getA() const
+{
+    return wspolczynniki_A;
+}
+std::vector<double> ModelARX::getB() const
+{
+    return wspolczynniki_B;
+}
+int ModelARX::getOpoznienie() const
+{
+    return opoznienie;
+}
 
-double ModelARX::symuluj(double u) {
+double ModelARX::symuluj(double u)
+{
     // Opóźnienie
     bufor_opoznienia.push_back(u);
     double u_delayed = 0.0;
@@ -68,7 +98,7 @@ double ModelARX::symuluj(double u) {
         u_delayed = u;
         bufor_opoznienia.clear();
     } else {
-        if (bufor_opoznienia.size() > (size_t)opoznienie) {
+        if (bufor_opoznienia.size() > (size_t) opoznienie) {
             u_delayed = bufor_opoznienia.front();
             bufor_opoznienia.pop_front();
         } else {

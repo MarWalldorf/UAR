@@ -1,21 +1,25 @@
 #ifndef MODELARX_H
 #define MODELARX_H
 
-#include <vector>
 #include <deque>
 #include <random>
+#include <vector>
 
-class ModelARX {
+class ModelARX
+{
 public:
-    ModelARX(const std::vector<double>& a, const std::vector<double>& b, int k = 1, double stddev = 0.0);
+    ModelARX(const std::vector<double> &a,
+             const std::vector<double> &b,
+             int k = 1,
+             double stddev = 0.0);
 
     double symuluj(double u);
 
     // Settery (z logicznym zachowaniem historii)
-    void setA(const std::vector<double>& a);
+    void setA(const std::vector<double> &a);
     std::vector<double> getA() const;
 
-    void setB(const std::vector<double>& b);
+    void setB(const std::vector<double> &b);
     std::vector<double> getB() const;
 
     void setOpoznienie(int k);
